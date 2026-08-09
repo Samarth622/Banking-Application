@@ -46,6 +46,7 @@ public class AccountController {
     public ResponseEntity<String> blockAccount(
             @PathVariable String accountNumber ) {
 
+        accountService.blockAccount(accountNumber);
         return ResponseEntity.ok("Account Blocked Successfully");
     }
 
