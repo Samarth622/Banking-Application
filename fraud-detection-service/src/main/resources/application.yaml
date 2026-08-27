@@ -5,3 +5,4 @@ spring:
 
 fraud:
   max-transactions-per-minute: 5
+  suspicious-amount-multiplier: 5
