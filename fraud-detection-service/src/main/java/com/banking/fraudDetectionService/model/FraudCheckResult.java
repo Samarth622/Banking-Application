@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FraudCheckResult {
 
-    private Boolean fruad;
+    private Boolean fraud;
 
     private String reason;
 }

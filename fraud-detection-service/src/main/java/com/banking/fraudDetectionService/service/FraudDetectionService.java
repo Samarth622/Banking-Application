@@ -49,7 +49,7 @@ public class FraudDetectionService {
 
         FraudCheckResult result = performFraudChecks(senderAccountNumber, amount, balance);
 
-        if(result.getFruad()){
+        if(result.getFraud()){
             log.info("Suspicious activity detected - account : {} " +
                     "reason: {} - requesting OTP verification",
                     senderAccountNumber, result.getReason());

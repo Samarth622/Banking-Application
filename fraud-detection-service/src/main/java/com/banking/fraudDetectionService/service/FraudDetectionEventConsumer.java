@@ -23,6 +23,8 @@ public class FraudDetectionEventConsumer {
 
         try {
             fraudDetectionService.checkTransaction(payload);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 }
