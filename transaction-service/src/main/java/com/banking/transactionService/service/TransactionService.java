@@ -34,6 +34,7 @@ public class TransactionService {
     private static final String TRANSACTION_INITIATED_TOPIC = "transaction.initiated";
     private static final String TRANSACTION_COMPLETED_TOPIC = "transaction.completed";
     private static final String TRANSACTION_REFUNDED_TOPIC = "transaction.refunded";
+    private static final String FRAUD_DETECTED_TOPIC = "fraud.detected";
 
     /**
      * SAGA Step 1 - Initiate transfer
@@ -157,6 +158,21 @@ public class TransactionService {
 
         log.info("SAGA compensation completed: {}, refunded to {}",
                 transaction.getId(), transaction.getSenderAccountNumber());
+    }
+
+    public void blockingAccountAndCompensate(Transaction transaction, String reason) {
+        // Publish fraud.detected -> Account service will block account
+        Map<String, Object> fraudEvent =  new HashMap<>();
+        fraudEvent.put("transactionId", transaction.getId());
+        fraudEvent.put("accountNumber", transaction.getSenderAccountNumber());
+        fraudEvent.put("reason", reason);
+
+        kafkaTemplate.send(FRAUD_DETECTED_TOPIC, transaction.getSenderAccountNumber(), fraudEvent);
+        log.warn("fraud.detected published - account: {} will be blocked, Kindly contact to the bank",
+                transaction.getSenderAccountNumber());
+
+        // SAGA compensation - refund sender
+        compensateTransaction(transaction, reason);
     }
 
     private TransactionResponse mapToResponse(Transaction transaction) {
