@@ -130,6 +130,20 @@ public class TransactionService {
         return mapToResponse(transaction);
     }
 
+    public void processCleanResult(String transactionID) {
+        Transaction transaction = transactionRepository.findById(transactionID)
+                .orElseThrow(
+                        () -> new RuntimeException("Transaction not found with id: " + transactionID)
+                );
+
+        if(transaction.getStatus() != TransactionStatus.PROCESSING) {
+            log.warn("Transaction {} not PROCESSING - skipping", transactionID);
+            return;
+        }
+
+        completeTransaction(transaction);
+    }
+
     private void compensateTransaction(Transaction transaction, String reason) {
         log.warn("SAGA COMPENSATION - refunding: {} amount: {}",
                 transaction.getSenderAccountNumber(), transaction.getAmount());

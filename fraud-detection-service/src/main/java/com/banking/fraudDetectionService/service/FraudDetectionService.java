@@ -34,7 +34,7 @@ public class FraudDetectionService {
     private double maxBalancePercentage;
 
     private static final String VERIFICATION_REQUIRED_TOPIC = "verification.required";
-    private static final String FRAUD_CHECK_CLEAN_RESULT_TOPIC = "fruad.check.clean";
+    private static final String FRAUD_CHECK_CLEAN_RESULT_TOPIC = "fraud.check.clean";
 
     public void checkTransaction(Map<String , Object> payload) {
 
