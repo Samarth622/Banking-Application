@@ -6,10 +6,12 @@ import com.banking.transactionService.dto.TransferRequest;
 import com.banking.transactionService.entity.Transaction;
 import com.banking.transactionService.entity.TransactionStatus;
 import com.banking.transactionService.entity.TransactionType;
+import com.banking.transactionService.event.TransactionCompletedEvent;
 import com.banking.transactionService.event.TransactionInitiatedEvent;
 import com.banking.transactionService.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -41,9 +43,6 @@ public class TransactionService {
      * Deducts from sender by feign
      * Saves transaction as PROCESSING
      * Publish event for Kafka for fraud check
-     * Returns
-     * @param request
-     * @return
      */
     public TransactionResponse transfer(TransferRequest request) {
         log.info("SAGA Start - Transfer: {} -> {}, amount: {}",
@@ -131,7 +130,7 @@ public class TransactionService {
         return mapToResponse(transaction);
     }
 
-    public void compensateTransaction(Transaction transaction, String reason) {
+    private void compensateTransaction(Transaction transaction, String reason) {
         log.warn("SAGA COMPENSATION - refunding: {} amount: {}",
                 transaction.getSenderAccountNumber(), transaction.getAmount());
 
@@ -160,7 +159,7 @@ public class TransactionService {
                 transaction.getId(), transaction.getSenderAccountNumber());
     }
 
-    public void blockingAccountAndCompensate(Transaction transaction, String reason) {
+    private void blockingAccountAndCompensate(Transaction transaction, String reason) {
         // Publish fraud.detected -> Account service will block account
         Map<String, Object> fraudEvent =  new HashMap<>();
         fraudEvent.put("transactionId", transaction.getId());
@@ -173,6 +172,28 @@ public class TransactionService {
 
         // SAGA compensation - refund sender
         compensateTransaction(transaction, reason);
+    }
+
+    private void completeTransaction(Transaction transaction) {
+        transaction.setStatus(TransactionStatus.COMPLETED);
+        transaction.setCompletedAt(LocalDateTime.now());
+        transactionRepository.save(transaction);
+
+        TransactionCompletedEvent transactionCompletedEvent = getTransactionCompletedEvent(transaction);
+
+        kafkaTemplate.send(TRANSACTION_COMPLETED_TOPIC, transaction.getId(), transactionCompletedEvent);
+
+        log.info("SAGA COMPLETE - Transaction {} completed", transaction.getId());
+    }
+
+    private static @NonNull TransactionCompletedEvent getTransactionCompletedEvent(Transaction transaction) {
+        TransactionCompletedEvent  transactionCompletedEvent = new TransactionCompletedEvent();
+        transactionCompletedEvent.setTransactionId(transaction.getId());
+        transactionCompletedEvent.setSenderAccountNumber(transaction.getSenderAccountNumber());
+        transactionCompletedEvent.setAmount(transaction.getAmount());
+        transactionCompletedEvent.setReceiverAccountNumber(transaction.getReceiverAccountNumber());
+        transactionCompletedEvent.setDescription(transaction.getDescription());
+        return transactionCompletedEvent;
     }
 
     private TransactionResponse mapToResponse(Transaction transaction) {
