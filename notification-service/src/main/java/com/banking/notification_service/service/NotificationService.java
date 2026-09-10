@@ -101,6 +101,32 @@ public class NotificationService {
 
     }
 
+    @KafkaListener(topics = "transaction.refunded")
+    public void consumeTransactionRefunded(
+            @Payload Map<String, Object> payload) {
+
+        try {
+
+            String senderAccount = (String) payload.get("senderAccountNumber");
+            String amount = payload.get("amount").toString();
+            String reason = (String) payload.get("reason");
+
+            sendAlert(
+                    senderAccount,
+                    "REFUND PROCESSED",
+                    String.format(
+                            "Your transaction of %s was cancelled. " +
+                            "Reason: %s " +
+                            "%s is refunded to your account %s",
+                            amount, reason, amount, senderAccount
+                    )
+            );
+
+        } catch (Exception e) {
+            log.error("Error sending transaction refunded: {}", e.getMessage());
+        }
+    }
+
     private void sendAlert(String accountNumber, String subject, String message) {
 
     }
