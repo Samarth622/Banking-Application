@@ -41,6 +41,42 @@ public class NotificationService {
         }
     }
 
+    @KafkaListener(topics = "transaction.completed")
+    public void consumeTransactionCompleted(
+            @Payload Map<String, Object> payload) {
+
+        try{
+
+            String senderAccount = (String) payload.get("senderAccountNumber");
+            String receiverAccount = (String) payload.get("receiverAccountNumber");
+            String amount = payload.get("amount").toString();
+
+            //DEBIT ALERT
+            sendAlert(
+                    senderAccount,
+                    "DEBIT ALERT",
+                    String.format(
+                            "%s debited from account %s",
+                            amount, senderAccount
+                    )
+            );
+
+            // CREDIT ALERT
+            sendAlert(
+                    receiverAccount,
+                    "CREDIT ALERT",
+                    String.format(
+                            "%s credited to account %s",
+                            amount, receiverAccount
+                    )
+            );
+
+        } catch (Exception e) {
+            log.error("Error sending transaction notification: {}", e.getMessage());
+        }
+
+    }
+
     private void sendAlert(String accountNumber, String subject, String message) {
 
     }
