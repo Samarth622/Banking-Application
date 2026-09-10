@@ -28,10 +28,10 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${razorpay.key-id}")
+    @Value("${Razorpay.key-id}")
     private String keyID;
 
-    @Value("${razorpay.key-secret}")
+    @Value("${Razorpay.key-secret}")
     private String keySecret;
 
     private static final String PAYMENT_COMPLETED_TOPIC = "payment.completed";
