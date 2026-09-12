@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/API-gateway/API-gateway.iml" filepath="$PROJECT_DIR$/API-gateway/API-gateway.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/Banking System.iml" filepath="$PROJECT_DIR$/.idea/Banking System.iml" />
     </modules>
   </component>

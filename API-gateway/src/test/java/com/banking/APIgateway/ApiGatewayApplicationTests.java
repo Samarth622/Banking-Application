@@ -1,4 +1,4 @@
-package com.banking.APIgateway;
+package com.banking.api_gateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,4 +1,4 @@
-package com.banking.APIgateway;
+package com.banking.api_gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
