@@ -127,6 +127,30 @@ public class NotificationService {
         }
     }
 
+    @KafkaListener(topics = "payment.completed")
+    public void consumePaymentCompleted(
+            @Payload Map<String, Object> payload) {
+
+        try {
+
+            String accountNumber = (String) payload.get("accountNumber");
+            String amount = payload.get("amount").toString();
+
+            sendAlert(
+                    accountNumber,
+                    "PAYMENT SUCCESSFUL",
+                    String.format(
+                            "Payment of %s completed. " +
+                            "Razorpay Id: %s",
+                            amount, payload.get("razorpayPaymentId")
+                    )
+            );
+        } catch (Exception e) {
+            log.error("Error sending payment notification: {}", e.getMessage());
+        }
+
+    }
+
     private void sendAlert(String accountNumber, String subject, String message) {
 
     }
