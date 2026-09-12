@@ -151,6 +151,30 @@ public class NotificationService {
 
     }
 
+    @KafkaListener(topics = "payment.failed")
+    public void consumePaymentFailed(
+            @Payload Map<String, Object> payload) {
+
+        try {
+
+            String accountNumber = (String) payload.get("accountNumber");
+            String amount = payload.get("amount").toString();
+
+            sendAlert(
+                    accountNumber,
+                    "PAYMENT FAILED",
+                    String.format(
+                            "Your payment of %s could not be processed. " +
+                            "Please try again or contact support.",
+                            amount
+                    )
+            );
+        } catch (Exception e) {
+            log.error("Error sending payment failed notification: {}", e.getMessage());
+        }
+
+    }
+
     private void sendAlert(String accountNumber, String subject, String message) {
 
     }
